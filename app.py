@@ -9,12 +9,21 @@ load_dotenv()
 def generate_content(topic):
     """Generate content using Groq API with a single agent approach."""
     try:
-        # Initialize Groq client
-        client = Groq(
-            api_key=os.getenv("GROQ_API_KEY"),
-            # Explicitly set proxies to None to avoid any issues
-            proxies=None
-        )
+        # Create a custom Groq client class that filters out the proxies parameter
+        class CustomGroq:
+            def __init__(self, api_key=None, **kwargs):
+                # Remove proxies if it exists in kwargs
+                if 'proxies' in kwargs:
+                    del kwargs['proxies']
+                # Initialize the actual Groq client
+                self.client = Groq(api_key=api_key, **kwargs)
+            
+            def __getattr__(self, name):
+                # Delegate all other attributes/methods to the actual client
+                return getattr(self.client, name)
+        
+        # Initialize the custom Groq client
+        client = CustomGroq(api_key=os.getenv("GROQ_API_KEY"))
         
         # System prompt that defines the agent's role and behavior
         system_prompt = """You are an expert content creator with deep knowledge across many subjects. 
