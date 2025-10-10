@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import streamlit as st
 from groq import Groq
+import httpx
 
 # Load environment variables
 load_dotenv()
@@ -9,21 +10,15 @@ load_dotenv()
 def generate_content(topic):
     """Generate content using Groq API with a single agent approach."""
     try:
-        # Create a custom Groq client class that filters out the proxies parameter
-        class CustomGroq:
-            def __init__(self, api_key=None, **kwargs):
-                # Remove proxies if it exists in kwargs
-                if 'proxies' in kwargs:
-                    del kwargs['proxies']
-                # Initialize the actual Groq client
-                self.client = Groq(api_key=api_key, **kwargs)
-            
-            def __getattr__(self, name):
-                # Delegate all other attributes/methods to the actual client
-                return getattr(self.client, name)
-        
-        # Initialize the custom Groq client
-        client = CustomGroq(api_key=os.getenv("GROQ_API_KEY"))
+        # Explicitly create an httpx client, ignoring any system-wide proxy settings.
+        # This is the most reliable way to prevent proxy-related errors on Render.
+        http_client = httpx.Client(proxies=None)
+
+        # Initialize the Groq client, passing our custom http_client.
+        client = Groq(
+            api_key=os.getenv("GROQ_API_KEY"),
+            http_client=http_client
+        )
         
         # System prompt that defines the agent's role and behavior
         system_prompt = """You are an expert content creator with deep knowledge across many subjects. 
