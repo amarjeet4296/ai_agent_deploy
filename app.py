@@ -10,7 +10,11 @@ def generate_content(topic):
     """Generate content using Groq API with a single agent approach."""
     try:
         # Initialize Groq client
-        client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        client = Groq(
+            api_key=os.getenv("GROQ_API_KEY"),
+            # Explicitly set proxies to None to avoid any issues
+            proxies=None
+        )
         
         # System prompt that defines the agent's role and behavior
         system_prompt = """You are an expert content creator with deep knowledge across many subjects. 
