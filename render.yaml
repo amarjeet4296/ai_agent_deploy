@@ -9,3 +9,8 @@ services:
         value: 3.9.0
       - key: GROQ_API_KEY
         fromEnv: GROQ_API_KEY
+      # Unset proxy variables to prevent interference with httpx
+      - key: HTTP_PROXY
+        value: ""
+      - key: HTTPS_PROXY
+        value: ""
